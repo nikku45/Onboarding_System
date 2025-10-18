@@ -14,14 +14,14 @@ const registerSchema = z.object({
 
 router.post('/register', async (req, res) => {
   const parse = registerSchema.safeParse(req.body);
-  const role = 'admin';
+ 
   if (!parse.success) return res.status(400).json({ error: 'Invalid data', issues: parse.error.issues });
   const { name, email, password } = parse.data;
   try {
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await pool.query(
       'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
-      [name, email, passwordHash, role]
+      [name, email, passwordHash]
     );
     const user = result.rows[0];
     setAuthCookie(res, { id: user.id, email: user.email, name: user.name, role: user.role });
